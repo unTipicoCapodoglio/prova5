@@ -1,5 +1,5 @@
 # prova5
-Con Francesco abbiamo deciso di suddividere il lavoro in:
+Ho pensato di suddividere il lavoro in:
 - Punto 4.2 = analisi5a
 - Punto 4.3 = analisi5b
 - Punto 4.4 = analisi5c
