@@ -5,6 +5,7 @@
 - Punto 4.5 = analisi5d
  
 La libreria lib5 contiene la funzione che calcola la velocità nel punto 4.3
+
 La libreria lin_Fit è aggiornata per:
 - Plottare residui e grafico in un'unica figura
 - Calcolare da sola le incertezze del fit partendo da $\sigma_y$, $\sigma_x$ e $m_0$
