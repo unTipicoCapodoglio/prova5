@@ -38,10 +38,9 @@ def y_estrapolato(x, m, c, sigma_m, sigma_c, cov_mc):
     return y, uy
 
 def lin_fit(x, y, sd_y, sd_x=0, m_0 = 0., xlabel="x [ux]", ylabel="y [uy]", xm=0., xM=1., ym=0., yM=1.,
-            name = "name", title = 'Fit Lineare', verbose=True, plot=True, setrange=False, save=False):
+            name = "name", title = 'Fit Lineare', verbose=True, plot=True, setrange=False, save=False,res=False):
     s = np.arange(float(sd_y.size))
     #pesi
-    #
     s = ((sd_x*m_0)**2 + sd_y**2)**0.5
     w_y = np.power(s.astype(float), -2)
     
@@ -69,49 +68,90 @@ def lin_fit(x, y, sd_y, sd_x=0, m_0 = 0., xlabel="x [ux]", ylabel="y [uy]", xm=0
         print ('rho(m, c) = ', rho_mc.round(4))
         
     if (plot):
-        
-        # rappresento i dati
-        plt.errorbar(x, y, yerr=sd_y, xerr=sd_x, ls='', marker='.', 
-                     color="black",label='dati')
+        #SE RES VERO VOGLIO PLOTTARE GRAFICO E RESIDUI INSIEME
+        if (res):
+            # Definisco i subplots
+            fig,ax = plt.subplots(2,1,gridspec_kw={'height_ratios': [2, 1]}, sharex=True)
+            fig.subplots_adjust(hspace = 0.05,left=None, bottom=None, right=None, top=None, wspace=None)
+            
+            # titolo superiore
+            plt.suptitle(t = title, x = 0.5, y = 0.93)
+            
+            # rappresento i dati
+            ax[0].errorbar(x, y, yerr=sd_y, xerr=sd_x, ls='', marker='.', 
+                             color="black",label='dati')
 
-        # costruisco dei punti x su cui valutare la retta del fit              
-        xmin = float(np.min(x)) 
-        xmax = float(np.max(x))
-        xmin_plot = xmin-.2*(xmax-xmin)
-        xmax_plot = xmax+.2*(xmax-xmin)
-        if (setrange):
-            xmin_plot = xm
-            xmax_plot = xM  
-        x1 = np.linspace(xmin_plot, xmax_plot, 100)
-        y1 = my_line(x1, m, c)
-        
-        # rappresento la retta del fit
-        plt.plot(x1, y1, linestyle='-.', color="green", label='fit')
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
-        plt.title(title)
-        plt.xlim(xmin_plot,xmax_plot)
-        if (setrange):
-            plt.ylim(ym,yM)
-        
-        # rappresento le incertezze sulla retta 
-        y1_plus_1sigma = y1+y_estrapolato(x1, m, c, np.sqrt(var_m), np.sqrt(var_c), cov_mc)[1]
-        y1_minus_1sigma = y1-y_estrapolato(x1, m, c, np.sqrt(var_m), np.sqrt(var_c), cov_mc)[1]         
-        plt.plot(x1,y1_plus_1sigma, linestyle='-', color="orange", label=r'fit $\pm 1\sigma$')
-        plt.plot(x1,y1_minus_1sigma, linestyle='-', color="orange")
-        
-        plt.grid()
-        
-        plt.legend()
-        
+            # costruisco dei punti x su cui valutare la retta del fit              
+            xmin = float(np.min(x)) 
+            xmax = float(np.max(x))
+            xmin_plot = xmin-.2*(xmax-xmin)
+            xmax_plot = xmax+.2*(xmax-xmin) 
+            x1 = np.linspace(xmin_plot, xmax_plot, 100)
+            y1 = my_line(x1, m, c)
+
+            # rappresento la retta del fit
+            ax[0].plot(x1, y1, linestyle='-.', color="green", label='fit')
+            ax[0].set_ylabel(ylabel)
+
+            plt.xlim(xmin_plot,xmax_plot)
+
+            # rappresento le incertezze sulla retta 
+            y1_plus_1sigma = y1+y_estrapolato(x1, m, c, np.sqrt(var_m), np.sqrt(var_c), cov_mc)[1]
+            y1_minus_1sigma = y1-y_estrapolato(x1, m, c, np.sqrt(var_m), np.sqrt(var_c), cov_mc)[1]         
+            ax[0].plot(x1,y1_plus_1sigma, linestyle='-', color="orange", label=r'fit $\pm 1\sigma$')
+            ax[0].plot(x1,y1_minus_1sigma, linestyle='-', color="orange")    
+            ax[0].grid()
+            ax[0].legend()
+            
+            #grafico dei residui
+            d = (y - (m*x + c))/s
+            ax[1].errorbar(x,d, yerr = 1, marker = '.', ls='')                   
+            ax[1].set_ylabel('Residui\nNormalizzati')
+            ax[1].set_xlabel(xlabel)
+            ax[1].grid()
+            
+         
+        #ALTRIMENTI IL PLOT VIENE COME AL SOLITO
+        else:
+            # rappresento i dati
+            plt.errorbar(x, y, yerr=sd_y, xerr=sd_x, ls='', marker='.', 
+                         color="black",label='dati')
+
+            # costruisco dei punti x su cui valutare la retta del fit              
+            xmin = float(np.min(x)) 
+            xmax = float(np.max(x))
+            xmin_plot = xmin-.2*(xmax-xmin)
+            xmax_plot = xmax+.2*(xmax-xmin)
+            if (setrange):
+                xmin_plot = xm
+                xmax_plot = xM  
+            x1 = np.linspace(xmin_plot, xmax_plot, 100)
+            y1 = my_line(x1, m, c)
+
+            # rappresento la retta del fit
+            plt.plot(x1, y1, linestyle='-.', color="green", label='fit')
+            plt.xlabel(xlabel)
+            plt.ylabel(ylabel)
+            plt.title(title)
+            plt.xlim(xmin_plot,xmax_plot)
+            if (setrange):
+                plt.ylim(ym,yM)
+
+            # rappresento le incertezze sulla retta 
+            y1_plus_1sigma = y1+y_estrapolato(x1, m, c, np.sqrt(var_m), np.sqrt(var_c), cov_mc)[1]
+            y1_minus_1sigma = y1-y_estrapolato(x1, m, c, np.sqrt(var_m), np.sqrt(var_c), cov_mc)[1]         
+            plt.plot(x1,y1_plus_1sigma, linestyle='-', color="orange", label=r'fit $\pm 1\sigma$')
+            plt.plot(x1,y1_minus_1sigma, linestyle='-', color="orange")
+
+            plt.grid()
+
+            plt.legend()
+
     if (save):
         plt.savefig(name)
         
     return m, np.sqrt(var_m), c, np.sqrt(var_c), cov_mc, rho_mc
 
-def help_residui():
-    print('''x,y,m,c,sigma_y, xlabel = 'x [ux]', ylabel='y [uy]', title = 'title', name = 'residui.png',\n
-            normalize = True, save = False''')
 
 def residui(x,y,m,c, sigma_y, sigma_x = 0, xlabel = 'x [ux]', ylabel='y [uy]', title = 'title', name = 'residui.pdf',
             normalize = True, save = False):
@@ -133,3 +173,40 @@ def residui(x,y,m,c, sigma_y, sigma_x = 0, xlabel = 'x [ux]', ylabel='y [uy]', t
     if (save):
         plt.savefig(name)
     
+def doubleplot(x,y,sd_y,m,c,ylabel,sd_x=0):
+    # Definisco i subplots
+    fig,ax = plt.subplots(2,1,gridspec_kw={'height_ratios': [2, 1]}, sharex=True)
+    fig.subplots_adjust(hspace = 0.1)
+    
+    # rappresento i dati
+    ax[0].errorbar(x, y, yerr=sd_y, xerr=sd_x, ls='', marker='.', 
+                     color="black",label='dati')
+
+    # costruisco dei punti x su cui valutare la retta del fit              
+    xmin = float(np.min(x)) 
+    xmax = float(np.max(x))
+    xmin_plot = xmin-.2*(xmax-xmin)
+    xmax_plot = xmax+.2*(xmax-xmin) 
+    x1 = np.linspace(xmin_plot, xmax_plot, 100)
+    y1 = my_line(x1, m, c)
+        
+    # rappresento la retta del fit
+    ax[0].plot(x1, y1, linestyle='-.', color="green", label='fit')
+    ax[0].set_ylabel(ylabel)
+    
+    plt.xlim(xmin_plot,xmax_plot)
+        
+    # rappresento le incertezze sulla retta 
+    y1_plus_1sigma = y1+y_estrapolato(x1, m, c, np.sqrt(var_m), np.sqrt(var_c), cov_mc)[1]
+    y1_minus_1sigma = y1-y_estrapolato(x1, m, c, np.sqrt(var_m), np.sqrt(var_c), cov_mc)[1]         
+    ax[0].plot(x1,y1_plus_1sigma, linestyle='-', color="orange", label=r'fit $\pm 1\sigma$')
+    ax[0].plot(x1,y1_minus_1sigma, linestyle='-', color="orange")    
+    ax[0].grid()
+    
+    #grafico dei residui
+    d = y - (m*x + c)
+    ax[1].errorbar(x,d, xerr = sigma_x, yerr = sigma_y, marker = '.', ls='')                   
+    ax[1].set_ylabel('Residui Normalizzati')
+    ax[1].grid()
+    
+    plt.legend()
